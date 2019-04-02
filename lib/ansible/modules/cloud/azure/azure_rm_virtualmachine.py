@@ -777,8 +777,27 @@ class AzureRMVirtualMachine(AzureRMModuleBase):
                 else:
                     self.fail("parameter error: expecting image to contain [publisher, offer, sku, version] or [name, resource_group]")
             elif self.image and isinstance(self.image, str):
-                custom_image = True
-                image_reference = self.get_custom_image_reference(self.image)
+                if len(self.image.split(':')) > 3:
+                    target = self.image.split(':')
+                    self.image = {}
+                    self.image['publisher'] = target[0]
+                    self.image['offer'] = target[1]
+                    self.image['sku'] = target[2]
+                    self.image['version'] = target[3]
+                    marketplace_image = self.get_marketplace_image_version()
+                    if self.image['version'] == 'latest':
+                        self.image['version'] = marketplace_image.name
+                        self.log("Using image version {0}".format(self.image['version']))
+
+                    image_reference = self.compute_models.ImageReference(
+                        publisher=self.image['publisher'],
+                        offer=self.image['offer'],
+                        sku=self.image['sku'],
+                        version=self.image['version']
+                    )
+                else:
+                    custom_image = True
+                    image_reference = self.get_custom_image_reference(self.image)
             elif self.image:
                 self.fail("parameter error: expecting image to be a string or dict not {0}".format(type(self.image).__name__))
 
