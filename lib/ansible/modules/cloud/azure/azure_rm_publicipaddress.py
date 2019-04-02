@@ -68,6 +68,10 @@ options:
             - Basic
             - Standard
         version_added: 2.6
+    ip_tags:
+        description:
+            - List of IpTag associated with the public IP address.
+            - Each element should contain type: value pair.
 
 extends_documentation_fragment:
     - azure
@@ -133,12 +137,15 @@ def pip_to_dict(pip):
         idle_timeout_in_minutes=pip.idle_timeout_in_minutes,
         provisioning_state=pip.provisioning_state,
         etag=pip.etag,
+        ip_tags=pip.ip_tags,
         sku=pip.sku.name
     )
     if pip.dns_settings:
         result['dns_settings']['domain_name_label'] = pip.dns_settings.domain_name_label
         result['dns_settings']['fqdn'] = pip.dns_settings.fqdn
         result['dns_settings']['reverse_fqdn'] = pip.dns_settings.reverse_fqdn
+    #if pip.ip_tags:
+    #    result['ip_tags'] = [dict(type=to_native(x.ip_tag_type), value=to_native(x.tag)) for x in pip.ip_tags] 
     return result
 
 
@@ -153,6 +160,7 @@ class AzureRMPublicIPAddress(AzureRMModuleBase):
             location=dict(type='str'),
             allocation_method=dict(type='str', default='Dynamic', choices=['Dynamic', 'Static']),
             domain_name=dict(type='str', aliases=['domain_name_label']),
+            ip_tags=dict(type='list'),
             sku=dict(type='str', choices=['Basic', 'Standard'])
         )
 
@@ -164,6 +172,7 @@ class AzureRMPublicIPAddress(AzureRMModuleBase):
         self.allocation_method = None
         self.domain_name = None
         self.sku = None
+        self.ip_tags = None
 
         self.results = dict(
             changed=False,
@@ -212,6 +221,10 @@ class AzureRMPublicIPAddress(AzureRMModuleBase):
                 update_tags, results['tags'] = self.update_tags(results['tags'])
                 if update_tags:
                     changed = True
+                if str(self.ip_tags or []) != str(results.get('ip_tags') or []):
+                    self.log("CHANGED: ip_tags")
+                    changed = True
+                    results['ip_tags'] = self.ip_tags
 
             elif self.state == 'absent':
                 self.log("CHANGED: public ip {0} exists but requested state is 'absent'".format(self.name))
@@ -237,6 +250,8 @@ class AzureRMPublicIPAddress(AzureRMModuleBase):
                         public_ip_allocation_method=self.allocation_method,
                         sku=self.network_models.PublicIPAddressSku(name=self.sku) if self.sku else None
                     )
+                    if self.ip_tags:
+                        pip.ip_tags = [self.network_models.IpTag(ip_tag_type=x.type, tag=x.value) for x in self.ip_tags]
                     if self.tags:
                         pip.tags = self.tags
                     if self.domain_name:
