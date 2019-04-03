@@ -79,7 +79,7 @@
    assert:
      that:
        - output.changed
-       - output.state.zone == ["1"] 
+       - output.state.zone == "1" 
 
  - name: Change the operating system type of the managed disk to linux
    azure_rm_managed_disk:
