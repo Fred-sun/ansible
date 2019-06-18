@@ -20,7 +20,7 @@ module: azure_rm_securitygroup_facts
 
 version_added: "2.1"
 
-short_description: Get security group facts.
+short_description: Get security group facts
 
 description:
     - Get facts for a specific security group or all security groups within a resource group.
@@ -41,8 +41,8 @@ extends_documentation_fragment:
     - azure
 
 author:
-    - "Chris Houseknecht (@chouseknecht)"
-    - "Matt Davis (@nitzmahone)"
+    - Chris Houseknecht (@chouseknecht)
+    - Matt Davis (@nitzmahone)
 
 '''
 
@@ -60,7 +60,8 @@ EXAMPLES = '''
 
 RETURN = '''
 azure_securitygroups:
-    description: List containing security group dicts.
+    description:
+        - List containing security group dicts.
     returned: always
     type: list
     example: [{
