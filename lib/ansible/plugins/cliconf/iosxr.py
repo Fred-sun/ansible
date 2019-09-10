@@ -60,7 +60,7 @@ class Cliconf(CliconfBase):
         if match:
             device_info['network_os_image'] = match.group(1)
 
-        model_search_strs = [r'^Cisco (.+) \(revision', r'^[Cc]isco (\S+ \S+).+bytes of .*memory']
+        model_search_strs = [r'^[Cc]isco (.+) \(revision', r'^[Cc]isco (\S+ \S+).+bytes of .*memory']
         for item in model_search_strs:
             match = re.search(item, data, re.M)
             if match:
@@ -190,7 +190,7 @@ class Cliconf(CliconfBase):
             elif label:
                 cmd_obj['command'] = 'commit label {0}'.format(label)
             else:
-                cmd_obj['command'] = 'commit'
+                cmd_obj['command'] = 'commit show-error'
 
         self.send_command(**cmd_obj)
 
