@@ -39,7 +39,7 @@ notes:
     - "   Resource > Assign Virtual Machine to Resource Pool"
     - "Module may require additional privileges as well, which may be required for gathering facts - e.g. ESXi configurations."
     - Tested on vSphere 5.5, 6.0, 6.5 and 6.7
-    - Use SCSI disks instead of IDE when you want to expand online disks by specifing a SCSI controller
+    - Use SCSI disks instead of IDE when you want to expand online disks by specifying a SCSI controller
     - "For additional information please visit Ansible VMware community wiki - U(https://github.com/ansible/community/wiki/VMware)."
 options:
   state:
@@ -151,6 +151,8 @@ options:
     - ' - C(cpu_reservation) (integer): The amount of CPU resource that is guaranteed available to the virtual machine.
           Unit is MHz. version_added: 2.5'
     - ' - C(version) (integer): The Virtual machine hardware versions. Default is 10 (ESXi 5.5 and onwards).
+          If value specified as C(latest), version is set to the most current virtual hardware supported on the host.
+          C(latest) is added in version 2.10.
           Please check VMware documentation for correct virtual machine hardware version.
           Incorrect hardware version may lead to failure in deployment. If hardware version is already equal to the given
           version then no action is taken. version_added: 2.6'
@@ -165,12 +167,12 @@ options:
     - This parameter is case sensitive.
     - 'Examples:'
     - "  virtual machine with RHEL7 64 bit, will be 'rhel7_64Guest'"
-    - "  virtual machine with CensOS 64 bit, will be 'centos64Guest'"
+    - "  virtual machine with CentOS 64 bit, will be 'centos64Guest'"
     - "  virtual machine with Ubuntu 64 bit, will be 'ubuntu64Guest'"
     - This field is required when creating a virtual machine, not required when creating from the template.
     - >
          Valid values are referenced here:
-         U(https://code.vmware.com/apis/358/vsphere#/doc/vim.vm.GuestOsDescriptor.GuestOsIdentifier.html)
+         U(https://code.vmware.com/apis/358/doc/vim.vm.GuestOsDescriptor.GuestOsIdentifier.html)
     version_added: '2.3'
   disk:
     description:
@@ -227,6 +229,12 @@ options:
     - "vmware-tools needs to be installed on the given virtual machine in order to work with this parameter."
     default: 'no'
     type: bool
+  wait_for_ip_address_timeout:
+    description:
+    - Define a timeout (in seconds) for the wait_for_ip_address parameter.
+    default: '300'
+    type: int
+    version_added: '2.10'
   wait_for_customization:
     description:
     - Wait until vCenter detects all guest customizations as successfully completed.
@@ -263,6 +271,12 @@ options:
        This is specifically the case for removing a powered on the virtual machine when C(state) is set to C(absent).'
     default: 'no'
     type: bool
+  delete_from_inventory:
+    description:
+    - Whether to delete Virtual machine from inventory or delete from disk.
+    default: False
+    type: bool
+    version_added: '2.10'
   datacenter:
     description:
     - Destination datacenter for the deploy operation.
@@ -295,7 +309,7 @@ options:
     description:
     - A list of networks (in the order of the NICs).
     - Removing NICs is not allowed, while reconfiguring the virtual machine.
-    - All parameters and VMware object names are case sensetive.
+    - All parameters and VMware object names are case sensitive.
     - 'One of the below parameters is required per entry:'
     - ' - C(name) (string): Name of the portgroup or distributed virtual portgroup for this interface.
           When specifying distributed virtual portgroup make sure given C(esxi_hostname) or C(cluster) is associated with it.'
@@ -411,6 +425,7 @@ EXAMPLES = r'''
       netmask: 255.255.255.0
       device_type: vmxnet3
     wait_for_ip_address: yes
+    wait_for_ip_address_timeout: 600
   delegate_to: localhost
   register: deploy_vm
 
@@ -532,6 +547,17 @@ EXAMPLES = r'''
     password: "{{ vcenter_password }}"
     validate_certs: no
     uuid: "{{ vm_uuid }}"
+    state: absent
+  delegate_to: localhost
+
+- name: Remove a virtual machine from inventory
+  vmware_guest:
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    validate_certs: no
+    name: vm_name
+    delete_from_inventory: True
     state: absent
   delegate_to: localhost
 
@@ -782,7 +808,7 @@ class PyVmomiDeviceHelper(object):
         """
         Function to return int value for given input, else return error
         Args:
-            input_value: Input value to retrive int value from
+            input_value: Input value to retrieve int value from
             name:  Name of the Input value (used to build error message)
         Returns: (int) if integer value can be obtained, otherwise will send a error message.
         """
@@ -885,12 +911,22 @@ class PyVmomiHelper(PyVmomi):
     def gather_facts(self, vm):
         return gather_vm_facts(self.content, vm)
 
-    def remove_vm(self, vm):
+    def remove_vm(self, vm, delete_from_inventory=False):
         # https://www.vmware.com/support/developer/converter-sdk/conv60_apireference/vim.ManagedEntity.html#destroy
         if vm.summary.runtime.powerState.lower() == 'poweredon':
             self.module.fail_json(msg="Virtual machine %s found in 'powered on' state, "
                                       "please use 'force' parameter to remove or poweroff VM "
                                       "and try removing VM again." % vm.name)
+        # Delete VM from Inventory
+        if delete_from_inventory:
+            try:
+                vm.UnregisterVM()
+            except (vim.fault.TaskInProgress,
+                    vmodl.RuntimeFault) as e:
+                return {'changed': self.change_applied, 'failed': True, 'msg': e.msg, 'op': 'UnregisterVM'}
+            self.change_applied = True
+            return {'changed': self.change_applied, 'failed': False}
+        # Delete VM from Disk
         task = vm.Destroy()
         self.wait_for_task(task)
         if task.info.state == 'error':
@@ -1246,42 +1282,55 @@ class PyVmomiHelper(PyVmomi):
             if 'version' in self.params['hardware']:
                 hw_version_check_failed = False
                 temp_version = self.params['hardware'].get('version', 10)
-                try:
-                    temp_version = int(temp_version)
-                except ValueError:
-                    hw_version_check_failed = True
+                if temp_version.lower() == 'latest':
+                    # Check is to make sure vm_obj is not of type template
+                    if vm_obj and not vm_obj.config.template:
+                        try:
+                            task = vm_obj.UpgradeVM_Task()
+                            self.wait_for_task(task)
+                            if task.info.state == 'error':
+                                return {'changed': self.change_applied, 'failed': True, 'msg': task.info.error.msg, 'op': 'upgrade'}
+                        except vim.fault.AlreadyUpgraded:
+                            # Don't fail if VM is already upgraded.
+                            pass
+                else:
+                    try:
+                        temp_version = int(temp_version)
+                    except ValueError:
+                        hw_version_check_failed = True
 
-                if temp_version not in range(3, 15):
-                    hw_version_check_failed = True
+                    if temp_version not in range(3, 16):
+                        hw_version_check_failed = True
 
-                if hw_version_check_failed:
-                    self.module.fail_json(msg="Failed to set hardware.version '%s' value as valid"
+                    if hw_version_check_failed:
+                        self.module.fail_json(msg="Failed to set hardware.version '%s' value as valid"
                                               " values range from 3 (ESX 2.x) to 14 (ESXi 6.5 and greater)." % temp_version)
-                # Hardware version is denoted as "vmx-10"
-                version = "vmx-%02d" % temp_version
-                self.configspec.version = version
-                if vm_obj is None or self.configspec.version != vm_obj.config.version:
-                    self.change_detected = True
-                if vm_obj is not None:
-                    # VM exists and we need to update the hardware version
-                    current_version = vm_obj.config.version
-                    # current_version = "vmx-10"
-                    version_digit = int(current_version.split("-", 1)[-1])
-                    if temp_version < version_digit:
-                        self.module.fail_json(msg="Current hardware version '%d' which is greater than the specified"
+                    # Hardware version is denoted as "vmx-10"
+                    version = "vmx-%02d" % temp_version
+                    self.configspec.version = version
+                    if vm_obj is None or self.configspec.version != vm_obj.config.version:
+                        self.change_detected = True
+                    # Check is to make sure vm_obj is not of type template
+                    if vm_obj and not vm_obj.config.template:
+                        # VM exists and we need to update the hardware version
+                        current_version = vm_obj.config.version
+                        # current_version = "vmx-10"
+                        version_digit = int(current_version.split("-", 1)[-1])
+                        if temp_version < version_digit:
+                            self.module.fail_json(msg="Current hardware version '%d' which is greater than the specified"
                                                   " version '%d'. Downgrading hardware version is"
                                                   " not supported. Please specify version greater"
                                                   " than the current version." % (version_digit,
                                                                                   temp_version))
-                    new_version = "vmx-%02d" % temp_version
-                    try:
-                        task = vm_obj.UpgradeVM_Task(new_version)
-                        self.wait_for_task(task)
-                        if task.info.state == 'error':
-                            return {'changed': self.change_applied, 'failed': True, 'msg': task.info.error.msg, 'op': 'upgrade'}
-                    except vim.fault.AlreadyUpgraded:
-                        # Don't fail if VM is already upgraded.
-                        pass
+                        new_version = "vmx-%02d" % temp_version
+                        try:
+                            task = vm_obj.UpgradeVM_Task(new_version)
+                            self.wait_for_task(task)
+                            if task.info.state == 'error':
+                                return {'changed': self.change_applied, 'failed': True, 'msg': task.info.error.msg, 'op': 'upgrade'}
+                        except vim.fault.AlreadyUpgraded:
+                            # Don't fail if VM is already upgraded.
+                            pass
 
             if 'virt_based_security' in self.params['hardware']:
                 host_version = self.select_host().summary.config.product.version
@@ -1764,7 +1813,8 @@ class PyVmomiHelper(PyVmomi):
             ident.userData.computerName = vim.vm.customization.FixedName()
             # computer name will be truncated to 15 characters if using VM name
             default_name = self.params['name'].replace(' ', '')
-            default_name = ''.join([c for c in default_name if c not in string.punctuation])
+            punctuation = string.punctuation.replace('-', '')
+            default_name = ''.join([c for c in default_name if c not in punctuation])
             ident.userData.computerName.name = str(self.params['customization'].get('hostname', default_name[0:15]))
             ident.userData.fullName = str(self.params['customization'].get('fullname', 'Administrator'))
             ident.userData.orgName = str(self.params['customization'].get('orgname', 'ACME'))
@@ -2472,7 +2522,7 @@ class PyVmomiHelper(PyVmomi):
                 set_vm_power_state(self.content, vm, 'poweredon', force=False)
 
                 if self.params['wait_for_ip_address']:
-                    self.wait_for_vm_ip(vm)
+                    wait_for_vm_ip(self.content, vm, self.params['wait_for_ip_address_timeout'])
 
                 if self.params['wait_for_customization']:
                     is_customization_ok = self.wait_for_customization(vm)
@@ -2653,21 +2703,6 @@ class PyVmomiHelper(PyVmomi):
             time.sleep(poll_interval)
         self.change_applied = self.change_applied or task.info.state == 'success'
 
-    def wait_for_vm_ip(self, vm, poll=100, sleep=5):
-        ips = None
-        facts = {}
-        thispoll = 0
-        while not ips and thispoll <= poll:
-            newvm = self.get_vm()
-            facts = self.gather_facts(newvm)
-            if facts['ipv4'] or facts['ipv6']:
-                ips = True
-            else:
-                time.sleep(sleep)
-                thispoll += 1
-
-        return facts
-
     def get_vm_events(self, vm, eventTypeIdList):
         byEntity = vim.event.EventFilterSpec.ByEntity(entity=vm, recursion="self")
         filterSpec = vim.event.EventFilterSpec(entity=byEntity, eventTypeId=eventTypeIdList)
@@ -2722,6 +2757,7 @@ def main():
         esxi_hostname=dict(type='str'),
         cluster=dict(type='str'),
         wait_for_ip_address=dict(type='bool', default=False),
+        wait_for_ip_address_timeout=dict(type='int', default=300),
         state_change_timeout=dict(type='int', default=0),
         snapshot_src=dict(type='str'),
         linked_clone=dict(type='bool', default=False),
@@ -2733,6 +2769,7 @@ def main():
         vapp_properties=dict(type='list', default=[]),
         datastore=dict(type='str'),
         convert=dict(type='str', choices=['thin', 'thick', 'eagerzeroedthick']),
+        delete_from_inventory=dict(type='bool', default=False),
     )
 
     module = AnsibleModule(argument_spec=argument_spec,
@@ -2767,7 +2804,7 @@ def main():
             if module.params['force']:
                 # has to be poweredoff first
                 set_vm_power_state(pyv.content, vm, 'poweredoff', module.params['force'])
-            result = pyv.remove_vm(vm)
+            result = pyv.remove_vm(vm, module.params['delete_from_inventory'])
         elif module.params['state'] == 'present':
             if module.check_mode:
                 result.update(
@@ -2791,7 +2828,7 @@ def main():
             if tmp_result['changed']:
                 result["changed"] = True
                 if module.params['state'] in ['poweredon', 'restarted', 'rebootguest'] and module.params['wait_for_ip_address']:
-                    wait_result = wait_for_vm_ip(pyv.content, vm)
+                    wait_result = wait_for_vm_ip(pyv.content, vm, module.params['wait_for_ip_address_timeout'])
                     if not wait_result:
                         module.fail_json(msg='Waiting for IP address timed out')
                     tmp_result['instance'] = wait_result

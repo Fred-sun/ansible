@@ -9,6 +9,7 @@ import json
 import operator
 import os
 import shutil
+import sys
 import tarfile
 import tempfile
 import threading
@@ -152,7 +153,8 @@ class CollectionRequirement:
             download_url = self._metadata.download_url
             artifact_hash = self._metadata.artifact_sha256
             headers = {}
-            self.api._add_auth_token(headers, download_url)
+            self.api._add_auth_token(headers, download_url, required=False)
+
             self.b_path = _download_file(download_url, b_temp_path, artifact_hash, self.api.validate_certs,
                                          headers=headers)
 
@@ -380,10 +382,24 @@ def publish_collection(collection_path, api, wait, timeout):
     :param timeout: The time in seconds to wait for the import process to finish, 0 is indefinite.
     """
     import_uri = api.publish_collection(collection_path)
+
     if wait:
+        # Galaxy returns a url fragment which differs between v2 and v3.  The second to last entry is
+        # always the task_id, though.
+        # v2: {"task": "https://galaxy-dev.ansible.com/api/v2/collection-imports/35573/"}
+        # v3: {"task": "/api/automation-hub/v3/imports/collections/838d1308-a8f4-402c-95cb-7823f3806cd8/"}
+        task_id = None
+        for path_segment in reversed(import_uri.split('/')):
+            if path_segment:
+                task_id = path_segment
+                break
+
+        if not task_id:
+            raise AnsibleError("Publishing the collection did not return valid task info. Cannot wait for task status. Returned task info: '%s'" % import_uri)
+
         display.display("Collection has been published to the Galaxy server %s %s" % (api.name, api.api_server))
         with _display_progress():
-            api.wait_import_task(import_uri, timeout)
+            api.wait_import_task(task_id, timeout)
         display.display("Collection has been successfully published and imported to the Galaxy server %s %s"
                         % (api.name, api.api_server))
     else:
@@ -456,6 +472,13 @@ def _tarfile_extract(tar, member):
 
 @contextmanager
 def _display_progress():
+    config_display = C.GALAXY_DISPLAY_PROGRESS
+    display_wheel = sys.stdout.isatty() if config_display is None else config_display
+
+    if not display_wheel:
+        yield
+        return
+
     def progress(display_queue, actual_display):
         actual_display.debug("Starting display_progress display thread")
         t = threading.current_thread()

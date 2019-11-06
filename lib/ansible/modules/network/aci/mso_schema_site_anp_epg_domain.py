@@ -105,7 +105,7 @@ options:
     type: str
   enhanced_lagpolicy_dn:
     description:
-    - Distingushied name of EPG lagpolicy. This attribute can only be used with vmmDomain domain association.
+    - Distinguished name of EPG lagpolicy. This attribute can only be used with vmmDomain domain association.
     type: str
   state:
     description:
@@ -126,7 +126,7 @@ extends_documentation_fragment: mso
 
 EXAMPLES = r'''
 - name: Add a new static leaf to a site EPG
-  mso_schema_template_anp_epg_domain:
+  mso_schema_site_anp_epg_domain:
     host: mso_host
     username: admin
     password: SomeSecretPassword
@@ -143,7 +143,7 @@ EXAMPLES = r'''
   delegate_to: localhost
 
 - name: Remove a static leaf from a site EPG
-  mso_schema_template_anp_epg_domain:
+  mso_schema_site_anp_epg_domain:
     host: mso_host
     username: admin
     password: SomeSecretPassword
@@ -160,7 +160,7 @@ EXAMPLES = r'''
   delegate_to: localhost
 
 - name: Query a specific site EPG static leaf
-  mso_schema_template_anp_epg_domain:
+  mso_schema_site_anp_epg_domain:
     host: mso_host
     username: admin
     password: SomeSecretPassword
@@ -176,7 +176,7 @@ EXAMPLES = r'''
   register: query_result
 
 - name: Query all site EPG static leafs
-  mso_schema_template_anp_epg_domain:
+  mso_schema_site_anp_epg_domain:
     host: mso_host
     username: admin
     password: SomeSecretPassword
@@ -328,7 +328,7 @@ def main():
             microSegVlan = dict(vlanType=micro_seg_vlan_type, vlan=micro_seg_vlan)
             vmmDomainProperties['microSegVlan'] = microSegVlan
         elif not micro_seg_vlan_type and micro_seg_vlan:
-            mso.fail_json(msg="micro_seg_vlan_type is required when micro_seg_vlan is provied.")
+            mso.fail_json(msg="micro_seg_vlan_type is required when micro_seg_vlan is provided.")
         elif micro_seg_vlan_type and not micro_seg_vlan:
             mso.fail_json(msg="micro_seg_vlan is required when micro_seg_vlan_type is provided.")
 
@@ -336,7 +336,7 @@ def main():
             portEncapVlan = dict(vlanType=port_encap_vlan_type, vlan=port_encap_vlan)
             vmmDomainProperties['portEncapVlan'] = portEncapVlan
         elif not port_encap_vlan_type and port_encap_vlan:
-            mso.fail_json(msg="port_encap_vlan_type is required when port_encap_vlan is provied.")
+            mso.fail_json(msg="port_encap_vlan_type is required when port_encap_vlan is provided.")
         elif port_encap_vlan_type and not port_encap_vlan:
             mso.fail_json(msg="port_encap_vlan is required when port_encap_vlan_type is provided.")
 
@@ -355,9 +355,9 @@ def main():
             epgLagPol = dict(enhancedLagPol=enhancedLagPol)
             vmmDomainProperties['epgLagPol'] = epgLagPol
         elif not enhanced_lagpolicy_name and enhanced_lagpolicy_dn:
-            mso.fail_json(msg="enhanced_lagpolicy_name is required when enhanced_lagpolicy_dn is provied.")
+            mso.fail_json(msg="enhanced_lagpolicy_name is required when enhanced_lagpolicy_dn is provided.")
         elif enhanced_lagpolicy_name and not enhanced_lagpolicy_dn:
-            mso.fail_json(msg="enhanced_lagpolicy_dn is required when enhanced_lagpolicy_name is provied.")
+            mso.fail_json(msg="enhanced_lagpolicy_dn is required when enhanced_lagpolicy_name is provided.")
 
         payload = dict(
             dn=domain_dn,
