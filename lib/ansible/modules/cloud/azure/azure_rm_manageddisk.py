@@ -343,9 +343,18 @@ class AzureRMManagedDisk(AzureRMModuleBase):
     def attach(self, vm_name, disk):
         vm = self._get_vm(vm_name)
         # find the lun
-        luns = ([d.lun for d in vm.storage_profile.data_disks]
+        name_lun = ([(d.lun,d.name) for d in vm.storage_profile.data_disks]
                 if vm.storage_profile.data_disks else [])
-        lun = max(luns) + 1 if luns else 0
+        luns = [lun[0] for lun in name_lun]
+        if luns:
+            lun = 0
+            for key in name_lun:
+                if key[1] == self.name:
+                    lun = key[0]
+            if not lun:
+                lun = max(luns) + 1
+        else:
+            lun = 0
 
         # prepare the data disk
         params = self.compute_models.ManagedDiskParameters(id=disk.get('id'), storage_account_type=disk.get('storage_account_type'))
