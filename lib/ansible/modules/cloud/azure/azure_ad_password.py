@@ -16,6 +16,12 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'supported_by': 'community'}
 
 DOCUMENTATION = '''
+---
+module: azure_ad_password
+
+version_added: "2.10"
+
+short_description: 
 
 '''
 
