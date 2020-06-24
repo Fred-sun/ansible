@@ -16,11 +16,60 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'supported_by': 'community'}
 
 DOCUMENTATION = '''
+module: azure_ad_password_info
 
+version_added: "2.10"
+
+short_description: Get Azure Active Directory Password info
+
+description:
+        - Get Azure Active Directory Password value.
+
+options:
+    app_id:
+        description:
+            - Application ID.
+        type: str
+    service_principal_object_id:
+        description:
+            - The service principal's ID or Object ID.
+        type: str
+    key_id:
+        description:
+            - Kye ID.
+        type: str
+    tenant:
+        description:
+            - The tenant ID.
+        type: str
+            required: True
+    end_date:
+        description:
+            - End date.
+        type: datetime
+    value:
+        description:
+            - Password value.
+        type: str
+    app_object_id:
+        description:
+            - Application object ID.
+        type: str
+
+extends_documentation_fragment:
+    - azure.azcollection.azure
+    - azure.azcollection.azure_tags
+
+author:
+    haiyuan_zhang (@haiyuazhang)
 '''
 
 EXAMPLES = '''
-
+  - name: get ad pass word info
+    azure_ad_password_info:
+      app_id: "{{ app_id }}"
+      tenant: "{{ tenant_id }}"
+      key_id: "{{ key_id }}"
 '''
 
 RETURN = '''
@@ -50,10 +99,8 @@ class AzureADPasswordInfo(AzureRMModuleBase):
             tenant=dict(type='str', required=True),
             value=dict(type='str'),
             end_date=dict(type='str'),
-            state=dict(type='str', default='present', choices=['present', 'absent']),
         )
 
-        self.state = None
         self.tenant = None
         self.app_id = None
         self.service_principal_object_id = None

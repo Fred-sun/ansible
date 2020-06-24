@@ -13,11 +13,56 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'supported_by': 'community'}
 
 DOCUMENTATION = '''
+---
+module: azure_ad_serviceprincipal
+
+version_added: "2.10"
+
+short_description: Manage Azure Active Directory Password
+
+description:
+        - Manage Azure Active Directory Password.
+
+options:
+    app_id:
+        description:
+            - Application ID.
+        type: str
+        required: True
+    tenant:
+        description:
+            - The tenant ID.
+        type: str
+        required: True
+    app_role_assignment_required:
+        description:
+            -  
+        type: bool
+    state:
+        description:
+            - Assert the state of Active Dirctory service principal.
+            - Use C(present) to create or update a Password and use C(absent) to delete.
+        default: present
+        choices:
+            - absent
+            - present
+        type: str
+
+extends_documentation_fragment:
+    - azure.azcollection.azure
+    - azure.azcollection.azure_tags
+
+author:
+    haiyuan_zhang (@haiyuazhang)
 
 '''
 
 EXAMPLES = '''
-
+  - name: create ad sp
+    azure_ad_serviceprincipal:
+      app_id: "{{ app_id }}"
+      state: present
+      tenant: "{{ tenant_id }}"
 '''
 
 RETURN = '''

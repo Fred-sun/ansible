@@ -13,10 +13,44 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
                     'supported_by': 'community'}
 
 DOCUMENTATION = '''
+module: azure_ad_serviceprincipal_info
+
+version_added: "2.10"
+
+short_description: Get Azure Active Directory service principal info
+
+description:
+    - Get Azure Active Directory service principal info.
+
+options:
+    app_id:
+        description:
+            - Application ID.
+        type: str
+    tenant:
+        description:
+            - The tenant ID.
+        type: str
+        required: True
+    object_id:
+        description:
+            -
+        type: str
+
+extends_documentation_fragment:
+    - azure.azcollection.azure
+    - azure.azcollection.azure_tags
+
+author:
+    haiyuan_zhang (@haiyuazhang)
 
 '''
 
 EXAMPLES = '''
+  - name: get ad sp info
+    azure_ad_serviceprincipal_info:
+      app_id: "{{ app_id }}"
+      tenant: "{{ tenant_id }}"
 
 '''
 

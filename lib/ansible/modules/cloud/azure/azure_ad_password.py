@@ -21,12 +21,63 @@ module: azure_ad_password
 
 version_added: "2.10"
 
-short_description: 
+short_description: Manage Azure Active Directory Password
+
+description:
+    - Manage Azure Active Directory Password.
+
+options:
+    app_id:
+        description:
+            - Application ID.
+        type: str
+    service_principal_id:
+        description:
+            - The service principal's ID.
+        type: str
+    key_id:
+        description:
+            - Kye ID.
+        type: str
+    tenant:
+        description:
+            - The tenant ID.
+        type: str
+        required: True
+    end_date:
+        description:
+            - End date.
+        type: datetime
+    value:
+        description:
+            - Password value.
+        type: str
+    state:
+        description:
+            - Assert the state of Active Dirctory Password.
+            - Use C(present) to create or update a Password and use C(absent) to delete.
+        default: present
+        choices:
+            - absent
+            - present
+        type: str
+
+extends_documentation_fragment:
+    - azure.azcollection.azure
+    - azure.azcollection.azure_tags
+
+author:
+    haiyuan_zhang (@haiyuazhang)
 
 '''
 
 EXAMPLES = '''
-
+    - name: create ad sp
+      azure_ad_password:
+        app_id: "{{ app_id }}"
+        state: present
+        value: "$abc12345678"
+        tenant: "{{ tenant_id }}"
 '''
 
 RETURN = '''
@@ -130,7 +181,7 @@ class AzureADPassword(AzureRMModuleBase):
         try:
             return list(self.client.applications.list_password_credentials(self.app_object_id))
         except GraphErrorException as ge:
-            self.fail("failed to fetch passwords for app {0}: {1".format(self.app_object_id,str(ge)))
+            self.fail("failed to fetch passwords for app {0}: {1}".format(self.app_object_id,str(ge)))
 
     def delete_all_passwords(self, old_passwords):
 
