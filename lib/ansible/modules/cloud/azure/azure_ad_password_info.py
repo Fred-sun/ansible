@@ -73,6 +73,36 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
+passwords:
+    description:
+        - Password info.
+    returned: success
+    type: complex
+    contains:
+        custom_key_identifier:
+            description:
+                - Custom key identifier.
+            type: str
+            returned: always
+            sample: None
+        end_date:
+            description:
+                - End date.
+            type: str
+            returned: always
+            sample: 2021-06-18T06:51:25.508304+00:00
+        key_id:
+            description:
+                - Key ID.
+            type: str
+            returned: always
+            sample: d33d730d-63e6-45f9-b165-eb723dfa10cd
+        start_date:
+            description:
+                - Start date.
+            type: str
+            returned: always
+            sample: 2020-06-18T06:51:25.508304+00:00
 
 '''
 
