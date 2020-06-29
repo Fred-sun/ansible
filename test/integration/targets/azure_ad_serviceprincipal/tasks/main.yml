@@ -1,0 +1,43 @@
+- name: create ad service principal
+  azure_ad_serviceprincipal:
+    app_id: d5a64010-3334-464f-8720-8ad850437eec
+    tenant: 72f988bf-86f1-41af-91ab-2d7cd011db47
+    state: present
+  register: output
+
+- assert:
+    that:
+        - output.changed
+
+- name: create ad service principal (idempontent)
+  azure_ad_serviceprincipal:
+    app_id: d5a64010-3334-464f-8720-8ad850437eec
+    tenant: 72f988bf-86f1-41af-91ab-2d7cd011db47
+    state: present
+  register: output
+
+- assert:
+    that:
+        - not output.changed
+
+- name: Get ad service principal info
+  azure_ad_serviceprincipal_info:
+    app_id: d5a64010-3334-464f-8720-8ad850437eec
+    tenant: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  register: output
+
+- assert:
+    that:
+        - output.app_display_name == 'fredAKSCluster'
+        - output.app_id == "d5a64010-3334-464f-8720-8ad850437eec"
+
+- name: delete ad service principal
+  azure_ad_serviceprincipal:
+    app_id: b6d3cf80-a95d-4c0c-bfc5-a63f08a1c301
+    tenant: 72f988bf-86f1-41af-91ab-2d7cd011db47
+    state: absent
+  register: output
+
+- assert:
+    that:
+        - output.changed
