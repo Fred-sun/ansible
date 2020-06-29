@@ -1,18 +1,24 @@
+- name: delete ad service principal
+  azure_ad_serviceprincipal:
+    app_id: "{{ app_id }}"
+    tenant: "{{ tenant_id }}"
+    state: absent
+
 - name: create ad service principal
   azure_ad_serviceprincipal:
-    app_id: d5a64010-3334-464f-8720-8ad850437eec
-    tenant: 72f988bf-86f1-41af-91ab-2d7cd011db47
+    app_id: "{{ app_id }}"
+    tenant: "{{ tenant_id }}"
     state: present
-  register: output
+  register: ad_fact
 
 - assert:
     that:
-        - output.changed
+        - ad_fact.changed
 
 - name: create ad service principal (idempontent)
   azure_ad_serviceprincipal:
-    app_id: d5a64010-3334-464f-8720-8ad850437eec
-    tenant: 72f988bf-86f1-41af-91ab-2d7cd011db47
+    app_id: "{{ app_id }}"
+    tenant: "{{ tenant_id }}"
     state: present
   register: output
 
@@ -22,19 +28,19 @@
 
 - name: Get ad service principal info
   azure_ad_serviceprincipal_info:
-    app_id: d5a64010-3334-464f-8720-8ad850437eec
-    tenant: 72f988bf-86f1-41af-91ab-2d7cd011db47
-  register: output
+    app_id: "{{ app_id }}"
+    tenant: "{{ tenant_id }}"
+  register: ad_info
 
 - assert:
     that:
-        - output.app_display_name == 'fredAKSCluster'
-        - output.app_id == "d5a64010-3334-464f-8720-8ad850437eec"
+        - ad_info.service_principals[0].app_display_name == ad_fact.app_display_name
+        - ad_info.service_principals[0].app_role_assignment_required == ad_fact.app_role_assignment_required
 
 - name: delete ad service principal
   azure_ad_serviceprincipal:
-    app_id: b6d3cf80-a95d-4c0c-bfc5-a63f08a1c301
-    tenant: 72f988bf-86f1-41af-91ab-2d7cd011db47
+    app_id: "{{ app_id }}"
+    tenant: "{{ tenant_id }}"
     state: absent
   register: output
 
