@@ -66,6 +66,30 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
+app_display_name:
+    description:
+        - App name.
+    type: str
+    returned: always
+    sample: fredAKSCluster
+app_id:
+    description:
+        - App ID.
+    returned: always
+    type: str
+    sample: b6d3cf80-a95d-4c0c-bfc5-a63f08a1c301
+app_role_assignment_required:
+    description:
+        - Require or not of app role assignment.
+    returned: always
+    type: bool
+    sample: false
+object_id:
+    description:
+        - Object ID.
+    returned: always
+    type: str
+    sample: c45fae27-41ef-43c1-a2de-99f507247c13
 
 '''
 
