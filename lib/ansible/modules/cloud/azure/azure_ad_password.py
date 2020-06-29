@@ -243,7 +243,7 @@ class AzureADPassword(AzureRMModuleBase):
         for pd in old_passwords:
             if pd.key_id == self.key_id:
                 to_update = pd
-                break
+                return
         try:
             if to_update is None or (self.value is None and self.end_date == to_update.end_date):
                 return
