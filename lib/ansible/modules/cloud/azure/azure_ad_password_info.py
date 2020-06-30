@@ -18,25 +18,25 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 module: azure_ad_password_info
 
-version_added: "2.11"
+version_added: "2.10"
 
-short_description: Get applications facts with AAD Graph
+short_description: Get application info
 
 description:
-        - Get applications facts with AAD Graph.
+        - Get application info.
 
 options:
     app_id:
         description:
-            - Application ID.
+            - The application ID.
         type: str
     service_principal_object_id:
         description:
-            - The service principal's ID or Object ID.
+            - The service principal object ID.
         type: str
     key_id:
         description:
-            - Credential key ID.
+            - Password key ID.
         type: str
     tenant:
         description:
@@ -50,12 +50,12 @@ options:
         type: str
     value:
         description:
-            - App password value.
+            - Application password value.
             - Length greater than 18 characters.
         type: str
     app_object_id:
         description:
-            - Application object ID.
+            - The application object ID.
         type: str
 
 extends_documentation_fragment:
@@ -64,10 +64,11 @@ extends_documentation_fragment:
 
 author:
     haiyuan_zhang (@haiyuazhang)
+    Fred-sun (@Fred-sun)
 '''
 
 EXAMPLES = '''
-  - name: get ad pass word info
+  - name: get ad password info
     azure_ad_password_info:
       app_id: "{{ app_id }}"
       tenant: "{{ tenant_id }}"
@@ -96,7 +97,7 @@ passwords:
             sample: 2021-06-18T06:51:25.508304+00:00
         key_id:
             description:
-                - Credential key ID.
+                - Password key ID.
             type: str
             returned: always
             sample: d33d730d-63e6-45f9-b165-eb723dfa10cd

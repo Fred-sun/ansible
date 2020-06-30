@@ -19,25 +19,25 @@ DOCUMENTATION = '''
 ---
 module: azure_ad_password
 
-version_added: "2.11"
+version_added: "2.10"
 
-short_description: Manage applications with AAD Graph
+short_description: Manage application with AAD Graph
 
 description:
-    - Manage applications with AAD Graph.
+    - Manage application with AAD Graph.
 
 options:
     app_id:
         description:
-            - Application ID.
+            - The application ID.
         type: str
     service_principal_id:
         description:
-            - The service principal's ID.
+            - The service principal ID.
         type: str
     key_id:
         description:
-            - Credential key ID.
+            - Password key ID.
         type: str
     tenant:
         description:
@@ -51,13 +51,14 @@ options:
         type: str
     value:
         description:
-            - App password value.
+            - Application password value.
             - Length greater than 18 characters.
         type: str
     state:
         description:
             - Assert the state of Active Dirctory Password.
             - Use C(present) to create or update a Password and use C(absent) to delete.
+            - Update is not supported, if I(state=absent) and I(key_id=None), then all passwords of the application will be deleted.
         default: present
         choices:
             - absent
@@ -70,11 +71,12 @@ extends_documentation_fragment:
 
 author:
     haiyuan_zhang (@haiyuazhang)
+    Fred-sun (@Fred-sun)
 
 '''
 
 EXAMPLES = '''
-    - name: create ad sp
+    - name: create ad password
       azure_ad_password:
         app_id: "{{ app_id }}"
         state: present
@@ -92,7 +94,7 @@ end_date:
     sample: 2021-06-28T06:00:32.637070+00:00
 key_id:
     description:
-        - Credential key ID.
+        - Password key ID
     type: str
     returned: always
     sample: 512f259c-c397-4ec6-8598-4f940d411970

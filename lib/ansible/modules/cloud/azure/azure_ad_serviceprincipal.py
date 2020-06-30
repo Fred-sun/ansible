@@ -16,17 +16,17 @@ DOCUMENTATION = '''
 ---
 module: azure_ad_serviceprincipal
 
-version_added: "2.11"
+version_added: "2.10"
 
-short_description: Manage Azure Active Directory service principals for automation authentication
+short_description: Manage Azure Active Directory service principal
 
 description:
-        - Manage Azure Active Directory service principals for automation authentication.
+        - Manage Azure Active Directory service principal.
 
 options:
     app_id:
         description:
-            - Application ID.
+            - The application ID.
         type: str
         required: True
     tenant:
@@ -54,7 +54,7 @@ extends_documentation_fragment:
 
 author:
     haiyuan_zhang (@haiyuazhang)
-
+    Fred-sun (@Fred-sun)
 '''
 
 EXAMPLES = '''
@@ -74,7 +74,7 @@ app_display_name:
     sample: fredAKSCluster
 app_id:
     description:
-        - Application ID.
+        - The application ID.
     returned: always
     type: str
     sample: b6d3cf80-a95d-4c0c-bfc5-a63f08a1c301
