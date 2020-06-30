@@ -136,7 +136,7 @@ class AzureADPassword(AzureRMModuleBase):
         self.state = None
         self.tenant = None
         self.app_id = None
-        self.service_principal_object_id = None
+        self.service_principal_id = None
         self.app_object_id = None
         self.key_id = None
         self.value = None
@@ -161,7 +161,7 @@ class AzureADPassword(AzureRMModuleBase):
 
         if self.state == 'present':
             if self.key_id and self.key_exists(passwords):
-                self.update_password(passwords)
+                self.fail("It can't update existing password")
             else:
                 self.create_password(passwords)
         else:
@@ -239,37 +239,6 @@ class AzureADPassword(AzureRMModuleBase):
 
         except GraphErrorException as ge:
             self.fail("failed to delete password with key id {0} - {1}".format(self.app_id, str(ge)))
-
-    def update_password(self, old_passwords):
-
-        if self.value is None and self.end_date is None:
-            self.fail("when updating existing password, module parameter value and end_date can not be both None")
-
-        to_update = None
-        for pd in old_passwords:
-            if pd.key_id == self.key_id:
-                to_update = pd
-                return
-        try:
-            if to_update is None or (self.value is None and self.end_date == to_update.end_date):
-                return
-
-            if self.value:
-                to_update.value = self.value
-            if self.end_date:
-                to_update.end_date = self.end_date
-
-            app_patch_parameters = ApplicationUpdateParameters(password_credentials=old_passwords)
-            self.client.applications.patch(self.app_object_id, app_patch_parameters)
-
-            updated = self.get_all_passwords()
-            for pd in updated:
-                if pd.key_id == self.key_id:
-                    self.results.upate(self.to_dict(pd))
-            self.results['changed'] = True
-
-        except GraphErrorException as ge:
-            self.fail("fail to update passwords: {0}".format(str(ge)))
 
     def create_password(self, old_passwords):
         def gen_guid():
