@@ -15,12 +15,12 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 module: azure_ad_serviceprincipal_info
 
-version_added: "2.10"
+version_added: "2.11"
 
-short_description: Get Azure Active Directory service principal info
+short_description: Get Azure Active Directory service principals fact for automation authentication
 
 description:
-    - Get Azure Active Directory service principal info.
+    - Get Azure Active Directory service principals fact for automation authentication..
 
 options:
     app_id:
@@ -34,7 +34,7 @@ options:
         required: True
     object_id:
         description:
-            - Object ID.
+            - Object ID of associated application.
         type: str
 
 extends_documentation_fragment:
@@ -57,25 +57,25 @@ EXAMPLES = '''
 RETURN = '''
 app_display_name:
     description:
-        - App name.
+        - Object's display name or its prefix.
     type: str
     returned: always
     sample: fredAKSCluster
 app_id:
     description:
-        - App ID.
+        - Application ID.
     returned: always
     type: str
     sample: b6d3cf80-a95d-4c0c-bfc5-a63f08a1c301
 app_role_assignment_required:
     description:
-        - Reqire or not of app role assignment.
+        - Whether the Role of the Service Principal is set.
     type: bool
     returned: always
     sample: false
 object_id:
     description:
-        - Object ID.
+        - Object ID of the associated application.
     returned: always
     type: str
     sample: c45fae27-41ef-43c1-a2de-99f507247c13

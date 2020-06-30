@@ -18,12 +18,12 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = '''
 module: azure_ad_password_info
 
-version_added: "2.10"
+version_added: "2.11"
 
-short_description: Get Azure Active Directory Password info
+short_description: Get applications facts with AAD Graph
 
 description:
-        - Get Azure Active Directory Password value.
+        - Get applications facts with AAD Graph.
 
 options:
     app_id:
@@ -36,7 +36,7 @@ options:
         type: str
     key_id:
         description:
-            - Kye ID.
+            - Credential key ID.
         type: str
     tenant:
         description:
@@ -45,11 +45,13 @@ options:
             required: True
     end_date:
         description:
-            - End date.
-        type: datetime
+            - Date or datemtime after which credentials expire.
+            - Default value is one year after current time.
+        type: str
     value:
         description:
-            - Password value.
+            - App password value.
+            - Length greater than 18 characters.
         type: str
     app_object_id:
         description:
@@ -87,20 +89,22 @@ passwords:
             sample: None
         end_date:
             description:
-                - End date.
-            type: str
+                - Date or datemtime after which credentials expire.
+                - Default value is one year after current time.
+            type: datetime
             returned: always
             sample: 2021-06-18T06:51:25.508304+00:00
         key_id:
             description:
-                - Key ID.
+                - Credential key ID.
             type: str
             returned: always
             sample: d33d730d-63e6-45f9-b165-eb723dfa10cd
         start_date:
             description:
-                - Start date.
-            type: str
+                - Date or datetime at which credentials become valid.
+                - Default value is current time
+            type: datetime
             returned: always
             sample: 2020-06-18T06:51:25.508304+00:00
 

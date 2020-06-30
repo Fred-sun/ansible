@@ -16,12 +16,12 @@ DOCUMENTATION = '''
 ---
 module: azure_ad_serviceprincipal
 
-version_added: "2.10"
+version_added: "2.11"
 
-short_description: Manage Azure Active Directory Password
+short_description: Manage Azure Active Directory service principals for automation authentication
 
 description:
-        - Manage Azure Active Directory Password.
+        - Manage Azure Active Directory service principals for automation authentication.
 
 options:
     app_id:
@@ -36,7 +36,7 @@ options:
         required: True
     app_role_assignment_required:
         description:
-            -  
+            - Whether the Role of the Service Principal is set.
         type: bool
     state:
         description:
@@ -68,25 +68,25 @@ EXAMPLES = '''
 RETURN = '''
 app_display_name:
     description:
-        - App name.
+        - Object's display name or its prefix.
     type: str
     returned: always
     sample: fredAKSCluster
 app_id:
     description:
-        - App ID.
+        - Application ID.
     returned: always
     type: str
     sample: b6d3cf80-a95d-4c0c-bfc5-a63f08a1c301
 app_role_assignment_required:
     description:
-        - Require or not of app role assignment.
+        - Whether the Role of the Service Principal is set.
     returned: always
     type: bool
     sample: false
 object_id:
     description:
-        - Object ID.
+        - Object ID of the associated application.
     returned: always
     type: str
     sample: c45fae27-41ef-43c1-a2de-99f507247c13

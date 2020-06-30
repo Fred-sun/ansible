@@ -19,12 +19,12 @@ DOCUMENTATION = '''
 ---
 module: azure_ad_password
 
-version_added: "2.10"
+version_added: "2.11"
 
-short_description: Manage Azure Active Directory Password
+short_description: Manage applications with AAD Graph
 
 description:
-    - Manage Azure Active Directory Password.
+    - Manage applications with AAD Graph.
 
 options:
     app_id:
@@ -37,7 +37,7 @@ options:
         type: str
     key_id:
         description:
-            - Kye ID.
+            - Credential key ID.
         type: str
     tenant:
         description:
@@ -46,11 +46,13 @@ options:
         required: True
     end_date:
         description:
-            - End date.
-        type: datetime
+            - Date or datemtime after which credentials expire.
+            - Default value is one year after current time.
+        type: str
     value:
         description:
-            - Password value.
+            - App password value.
+            - Length greater than 18 characters.
         type: str
     state:
         description:
@@ -83,20 +85,22 @@ EXAMPLES = '''
 RETURN = '''
 end_date:
     description:
-        - End date.
-    type: str
+        - Date or datemtime after which credentials expire.
+        - Default value is one year after current time.
+    type: datetime
     returned: always
     sample: 2021-06-28T06:00:32.637070+00:00
 key_id:
     description:
-        - Key ID.
+        - Credential key ID.
     type: str
     returned: always
     sample: 512f259c-c397-4ec6-8598-4f940d411970
 start_date:
     description:
-        - Start date.
-    type: str
+        - Date or datetime at which credentials become valid.
+        - Default value is current time.
+    type: datetime
     returned: always
     sample: 2020-06-28T06:00:32.637070+00:00
 
