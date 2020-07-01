@@ -25,15 +25,21 @@ DOCUMENTATION = """
         vars:
             - name: ansible_host
             - name: ansible_winrm_host
+        type: str
       remote_user:
-        keywords:
-          - name: user
-          - name: remote_user
         description:
             - The user to log in as to the Windows machine
         vars:
             - name: ansible_user
             - name: ansible_winrm_user
+        type: str
+      remote_password:
+        description: Authentication password for the C(remote_user). Can be supplied as CLI option.
+        vars:
+            - name: ansible_password
+            - name: ansible_winrm_pass
+            - name: ansible_winrm_password
+        type: str
       port:
         description:
             - port for winrm to connect on remote target
@@ -42,8 +48,6 @@ DOCUMENTATION = """
           - name: ansible_port
           - name: ansible_winrm_port
         default: 5986
-        keywords:
-          - name: port
         type: integer
       scheme:
         description:
@@ -53,16 +57,18 @@ DOCUMENTATION = """
         choices: [http, https]
         vars:
           - name: ansible_winrm_scheme
+        type: str
       path:
         description: URI path to connect to
         default: '/wsman'
         vars:
           - name: ansible_winrm_path
+        type: str
       transport:
         description:
-           - List of winrm transports to attempt to to use (ssl, plaintext, kerberos, etc)
+           - List of winrm transports to attempt to use (ssl, plaintext, kerberos, etc)
            - If None (the default) the plugin will try to automatically guess the correct list
-           - The choices avialable depend on your version of pywinrm
+           - The choices available depend on your version of pywinrm
         type: list
         vars:
           - name: ansible_winrm_transport
@@ -71,6 +77,7 @@ DOCUMENTATION = """
         default: kinit
         vars:
           - name: ansible_winrm_kinit_cmd
+        type: str
       kerberos_mode:
         description:
             - kerberos usage mode.
@@ -83,6 +90,7 @@ DOCUMENTATION = """
         choices: [managed, manual]
         vars:
           - name: ansible_winrm_kinit_mode
+        type: str
       connection_timeout:
         description:
             - Sets the operation and read timeout settings for the WinRM
@@ -94,6 +102,7 @@ DOCUMENTATION = """
               pywinrm.
         vars:
           - name: ansible_winrm_connection_timeout
+        type: int
 """
 
 import base64
@@ -205,7 +214,7 @@ class Connection(ConnectionBase):
         # starting the WinRM connection
         self._winrm_host = self.get_option('remote_addr')
         self._winrm_user = self.get_option('remote_user')
-        self._winrm_pass = self._play_context.password
+        self._winrm_pass = self.get_option('remote_password')
 
         self._winrm_port = self.get_option('port')
 

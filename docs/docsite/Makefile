@@ -27,7 +27,7 @@ ifdef PLUGINS
 	PLUGIN_ARGS = -l $(PLUGINS)
 endif
 
-DOC_PLUGINS ?= become cache callback cliconf connection httpapi inventory lookup shell strategy vars
+DOC_PLUGINS ?= become cache callback cliconf connection httpapi inventory lookup netconf shell strategy vars
 
 assertrst:
 ifndef rst
@@ -46,6 +46,9 @@ htmldocs: generate_rst
 singlehtmldocs: generate_rst
 	CPUS=$(CPUS) $(MAKE) -f Makefile.sphinx singlehtml
 
+linkcheckdocs: generate_rst
+		CPUS=$(CPUS) $(MAKE) -f Makefile.sphinx linkcheck
+		
 webdocs: docs
 
 #TODO: leaving htmlout removal for those having older versions, should eventually be removed also

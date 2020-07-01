@@ -31,7 +31,7 @@ become_method
     (at play or task level) overrides the default method set in ansible.cfg, set to use any of the :ref:`become_plugins`.
 
 become_flags
-    (at play or task level) permit the use of specific flags for the tasks or role. One common use is to change the user to nobody when the shell is set to no login. Added in Ansible 2.2.
+    (at play or task level) permit the use of specific flags for the tasks or role. One common use is to change the user to nobody when the shell is set to nologin. Added in Ansible 2.2.
 
 For example, to manage a system service (which requires ``root`` privileges) when connected as a non-``root`` user, you can use the default value of ``become_user`` (``root``):
 
@@ -62,6 +62,9 @@ To do something as the ``nobody`` user when the shell is nologin:
       become_method: su
       become_user: nobody
       become_flags: '-s /bin/sh'
+
+To specify a password for sudo, run ``ansible-playbook`` with ``--ask-become-pass`` (``-K`` for short).
+If you run a playbook utilizing ``become`` and the playbook seems to hang, most likely it is stuck at the privilege escalation prompt. Stop it with `CTRL-c`, then execute the playbook with ``-K`` and the appropriate password.
 
 Become connection variables
 ---------------------------

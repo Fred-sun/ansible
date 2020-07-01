@@ -230,7 +230,7 @@ class AnsibleCallbackError(AnsibleRuntimeError):
 
 
 class AnsibleTemplateError(AnsibleRuntimeError):
-    '''A template related errror'''
+    '''A template related error'''
     pass
 
 
@@ -257,10 +257,12 @@ class AnsibleFileNotFound(AnsibleRuntimeError):
         self.file_name = file_name
         self.paths = paths
 
+        if message:
+            message += "\n"
         if self.file_name:
-            if message:
-                message += "\n"
             message += "Could not find or access '%s'" % to_text(self.file_name)
+        else:
+            message += "Could not find file"
 
         if self.paths and isinstance(self.paths, Sequence):
             searched = to_text('\n\t'.join(self.paths))
@@ -309,4 +311,26 @@ class AnsibleActionFail(AnsibleAction):
 
 class _AnsibleActionDone(AnsibleAction):
     ''' an action runtime early exit'''
+    pass
+
+
+class AnsiblePluginError(AnsibleError):
+    ''' base class for Ansible plugin-related errors that do not need AnsibleError contextual data '''
+    def __init__(self, message=None, plugin_load_context=None):
+        super(AnsiblePluginError, self).__init__(message)
+        self.plugin_load_context = plugin_load_context
+
+
+class AnsiblePluginRemovedError(AnsiblePluginError):
+    ''' a requested plugin has been removed '''
+    pass
+
+
+class AnsiblePluginCircularRedirect(AnsiblePluginError):
+    '''a cycle was detected in plugin redirection'''
+    pass
+
+
+class AnsibleCollectionUnsupportedVersionError(AnsiblePluginError):
+    '''a collection is not supported by this version of Ansible'''
     pass

@@ -149,7 +149,7 @@ following commands:
 .. code-block:: shell
 
     source hacking/env-setup
-    ansible-test units --tox --python 3.7 '.*vmware.*'
+    ansible-test units --venv --python 3.7 '.*vmware.*'
 
 Code style and best practice
 ============================
@@ -177,6 +177,15 @@ Depending upon the functionality provided by ESXi or vCenter, some modules can s
         self.host = find_obj(self.content, [vim.HostSystem], None)
     if self.host is None:
         self.module.fail_json(msg="Failed to find host system.")
+
+Example should use the fully qualified collection name (FQCN)
+-------------------------------------------------------------
+
+Use FQCN for examples within module documentation For instance, you should use ``community.vmware.vmware_guest`` instead of just
+``vmware_guest``.
+
+This way, the examples don't depend on the ``collections`` directive of the
+playbook.
 
 Functional tests
 ----------------

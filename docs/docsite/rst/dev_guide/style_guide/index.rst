@@ -56,12 +56,12 @@ Latin words and phrases like ``e.g.`` or ``etc.``
 are easily understood by English speakers.
 They may be harder to understand for others and are also tricky for automated translation.
 
-Use the following English terms in place of Latin terms or abbreviations: 
+Use the following English terms in place of Latin terms or abbreviations:
 
 +-------------------------------+------------------------------+
-| Latin                         | English                      | 
+| Latin                         | English                      |
 +===============================+==============================+
-| i.e                           | in other words               | 
+| i.e                           | in other words               |
 +-------------------------------+------------------------------+
 | e.g.                          | for example                  |
 +-------------------------------+------------------------------+
@@ -143,6 +143,8 @@ All internal links should use the ``:ref:`` syntax.
 Every page should have at least one anchor to support internal ``:ref:`` links.
 Long pages, or pages with multiple levels of headers, can also include a local TOC.
 
+.. _adding_anchors_rst:
+
 Adding anchors
 ^^^^^^^^^^^^^^
 
@@ -177,6 +179,8 @@ Adding links to modules and plugins
    :ref:`this module <this_module>``
    :ref:`that connection plugin <that_connection>`
 
+.. _local_toc:
+
 Adding local TOCs
 ^^^^^^^^^^^^^^^^^
 
@@ -207,6 +211,7 @@ These pages offer more help with grammatical, stylistic, and technical rules for
   trademarks
   grammar_punctuation
   spelling_word_choice
+  search_hints
   resources
 
 .. seealso::

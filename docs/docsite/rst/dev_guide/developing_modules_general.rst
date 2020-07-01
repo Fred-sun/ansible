@@ -63,12 +63,6 @@ To create a new module:
     # Copyright: (c) 2018, Terry Jones <terry.jones@example.org>
     # GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
-    ANSIBLE_METADATA = {
-        'metadata_version': '1.1',
-        'status': ['preview'],
-        'supported_by': 'community'
-    }
-
     DOCUMENTATION = '''
     ---
     module: my_test
@@ -137,7 +131,7 @@ To create a new module:
 
         # seed the result dict in the object
         # we primarily care about changed and state
-        # change is if this module effectively modified the target
+        # changed is if this module effectively modified the target
         # state will include any data that you want your module to pass back
         # for consumption, for example, in a subsequent task
         result = dict(
@@ -259,7 +253,7 @@ You can run through Ansible's sanity checks in a container:
 ``$ ansible-test sanity -v --docker --python 2.7 MODULE_NAME``
 
 Note that this example requires Docker to be installed and running. If you'd rather not use a
-container for this, you can choose to use ``--tox`` instead of ``--docker``.
+container for this, you can choose to use ``--venv`` instead of ``--docker``.
 
 Unit tests
 ----------
@@ -303,6 +297,8 @@ surrounding Ansible development.
 
 For questions and discussions pertaining to using the Ansible product,
 use the ``#ansible`` channel.
+
+For more specific IRC channels look at :ref:`Community Guide, Communicating <communication_irc>`.
 
 Credit
 ======
